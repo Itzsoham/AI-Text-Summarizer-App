@@ -1,6 +1,7 @@
 // This is the function where the call to the API is made. Returns the summarized text as a string.
 const axios = require("axios");
-require("dotenv").config(); // Ensure .env is loaded
+// require("dotenv").config(); 
+// const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY;// Ensure .env is loaded
 
 async function summarizeText(text) {
   // INSERT CODE SNIPPET FROM POSTMAN BELOW
@@ -19,8 +20,7 @@ async function summarizeText(text) {
     url: "https://api-inference.huggingface.co/models/facebook/bart-large-cnn",
     headers: {
       "Content-Type": "application/json",
-      Authorization:
-        "Bearer " + "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",
+      Authorization: "Bearer " + process.env.HUGGINGFACE_API_KEY,
     },
     data: data,
   };

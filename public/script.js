@@ -13,7 +13,6 @@ submitButton.disabled = true;
 
 // Next, we define a function called verifyTextLength(). This function will be called when the user enters something in the text area. It receives an event, called ‘e’ here
 function verifyTextLength(e) {
-
   // The e.target property gives us the HTML element that triggered the event, which in this case is the textarea. We save this to a variable called ‘textarea’
   const textarea = e.target;
 
@@ -28,44 +27,44 @@ function verifyTextLength(e) {
 }
 
 function submitData(e) {
-
-  // This is used to add animation to the submit button
+  // Add a loading animation to the submit button
   submitButton.classList.add("submit-button--loading");
 
   const text_to_summarize = textArea.value;
 
-  // INSERT CODE SNIPPET FROM POSTMAN BELOW
-  const myHeaders = new Headers();
-  myHeaders.append("Content-Type", "application/json");
-  myHeaders.append("Authorization", "Bearer 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");
-
-  const raw = JSON.stringify({
-    "text_to_summarize": text_to_summarize
-  });
-
-  const requestOptions = {
+  // Send a POST request to the server
+  fetch("/summarize", {
     method: "POST",
-    headers: myHeaders,
-    body: raw,
-    redirect: "follow"
-  };
-
-  // Send the text to the server using fetch API
-
-  // Note - here we can omit the “baseUrl” we needed in Postman and just use a relative path to “/summarize” because we will be calling the API from our Replit!  
-  fetch('/summarize', requestOptions)
-    .then(response => response.text()) // Response will be summarized text
-    .then(summary => {
-      // Do something with the summary response from the back end API!
-
-      // Update the output text area with new summary
-      summarizedTextArea.value = summary;
-
-      // Stop the spinning loading animation
-      submitButton.classList.remove("submit-button--loading");
-
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      text_to_summarize: text_to_summarize,
+    }),
+  })
+    .then((response) => {
+      // Check if response is ok (status 200-299)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.text(); // Get the raw text
     })
-    .catch(error => {
-      console.log(error.message);
+    .then((rawText) => {
+      try {
+        const data = JSON.parse(rawText); // Try parsing the text as JSON
+        summarizedTextArea.value = data.summary; // Update the text area with the summary
+      } catch (error) {
+        console.error("Error parsing JSON:", error.message);
+        summarizedTextArea.value = "Error: Failed to parse the response";
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error.message);
+      summarizedTextArea.value = "Error: " + error.message;
+    })
+    .finally(() => {
+      // Remove the loading animation
+      submitButton.classList.remove("submit-button--loading");
     });
 }
+
